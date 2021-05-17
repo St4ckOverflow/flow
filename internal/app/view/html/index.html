@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+	</head>
+	<style type="text/css">
+	html,body{height: 100%;width: 100%; margin: 0 auto;}
+	textarea {outline:none}
+	.item { width:100%; margin-top:10px;}
+	.button {
+		font-size: .9rem;
+		font-weight: normal;
+		line-height: 1.9rem;
+		display: -ms-inline-flexbox;
+		display: inline-flex;
+		min-width: 2rem;
+		height: 2.4rem;
+		padding: 0 .5rem;
+		cursor: pointer;
+		-webkit-user-select: none;
+		-moz-user-select: none;
+			-ms-user-select: none;
+				user-select: none;
+		text-align: center;
+		white-space: nowrap;
+		white-space: pre-line;
+		color: #fff;
+		border: .05rem solid #3280fc;
+		border-radius: .15rem;
+		background: #3280fc;
+		-ms-flex-pack: center;
+		justify-content: center;
+		-ms-flex-align: center;
+		align-items: center;
+	}
+	.textarea {
+		line-height: 1.42857143; display: block;
+		width: 100%;
+		padding: .15rem .25rem;
+		transition: border .2s cubic-bezier(.175,.885,.32,1),box-shadow .2s cubic-bezier(.175,.885,.32,1);
+		color: inherit;
+		border: .05rem solid #ccc;
+		background-color: #fff;
+		box-shadow: none;
+		-webkit-appearance: none;
+		resize: none;
+		border-radius: 0;
+		font-size: .8rem;
+		margin: 0;
+	}
+	
+	</style>
+	<body style="background-color: rgba(0,0,0,.07);">
+		<div style="padding: 0 8px; height: 100%;">
+			<button id="btnBrowseFile" class="button item">浏览文件</button>
+			<button id="btnUploadFile" class="button item">上传文件</button>
+			<div class ="item" style="height: 70%;">
+				<div style="display: flex; height: 3.8rem; border-bottom: 0;">
+					<textarea class="textarea" class="textarea" id="textMessage" style="width: 78%; border-right: 0;"></textarea>
+					<button id="btnMessageSend"class="button" style="width: 22%; height: 100%; border-radius: 0;">发送内容</button>
+				</div>
+				<div style="display: flex; border-top: 1px solid #ccc; height: 80%;">
+					<textarea id="showMessage" class="textarea" readonly style="border-top: 0; margin-top: -1px;"></textarea>
+				</div>
+			</div>
+		</div>
+		
+		<script type="text/javascript">
+			var urlFileBrowse = "/file/browse";
+			var urlFileUpload = "/file/upload";
+			var urlTextPost = "/text/post";
+			var urlTextGet = "/text/get";
+			// 文件浏览
+			var btnBrowseFile = document.getElementById("btnBrowseFile");
+			btnBrowseFile.onclick = function() {
+				console.log("文件浏览");
+				window.open(urlFileBrowse)
+			}
+			// 上传文件
+			var btnUploadFile = document.getElementById("btnUploadFile");
+			btnUploadFile.onclick = function() {
+				console.log("上传文件");
+				var input = document.createElement("input");
+				input.type = "file";
+				input.click();
+				input.onchange = function(){
+					var file = input.files[0];
+					var form = new FormData();
+					form.append("file", file); //第一个参数是后台读取的请求key值
+					var xhr = new XMLHttpRequest();
+					xhr.open("POST", urlFileUpload);
+					xhr.send(form); //发送表单数据
+					xhr.onreadystatechange = function() {
+						if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+							alert("上传成功");
+						}
+					}
+				}
+			}
+			// 发送内容
+			var btnMessageSend = document.getElementById("btnMessageSend");
+			btnMessageSend.onclick = function() {
+				var textMessage = document.getElementById("textMessage").value;
+				console.log("发送内容：" + textMessage);
+				var xhr = new XMLHttpRequest();
+				xhr.onreadystatechange = function () {
+					if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+						console.log(xhr.responseText)
+						document.getElementById("textMessage").value = "";
+					}
+				}
+				xhr.open("POST", urlTextPost);
+				xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+				var data = 'message=' + encodeURIComponent(textMessage)
+				xhr.send(data);
+			}
+
+			function getMessage() {
+				var xhr = new XMLHttpRequest();
+				xhr.onreadystatechange = function () {
+					if (xhr.readyState === XMLHttpRequest.DONE && xhr.status === 200) {
+						var message = xhr.responseText;
+						console.log(message)
+						document.getElementById("showMessage").value = message;
+					}
+				}
+				xhr.open("GET", urlTextGet);
+				xhr.send("");
+			}
+			setInterval(getMessage, 1500);
+		</script>
+	</body>
+</html>
